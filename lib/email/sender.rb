@@ -35,9 +35,9 @@ module Email
     class ProviderRegistry < ::Sender::Core::ProviderRegistry
       # Email provider adapter paths included in the initial catalog.
       DEFAULT_PROVIDERS = {
-        mailpit: "email/sender/providers/mailpit",
-        resend: "email/sender/providers/resend",
-        mailgun: "email/sender/providers/mailgun"
+        mailpit: { path: "email/sender/providers/mailpit", support_level: :fully_tested },
+        resend: { path: "email/sender/providers/resend", support_level: :fully_tested },
+        mailgun: { path: "email/sender/providers/mailgun", support_level: :fully_tested }
       }.freeze
       # Capabilities implemented by every provider in the initial catalog.
       DEFAULT_CAPABILITIES = %i[email html].freeze
@@ -101,6 +101,11 @@ module Email
     # @return [Array<Symbol>] providers supported by the gem
     def self.providers
       registry.supported
+    end
+
+    # @return [Hash] advisory metadata for a registered email provider
+    def self.provider_metadata(name)
+      registry.provider_metadata(name)
     end
 
     # Configure one email provider.

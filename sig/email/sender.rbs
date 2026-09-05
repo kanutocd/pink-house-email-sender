@@ -33,14 +33,15 @@ module Email
     def self.build_message: (from: String, to: String | Array[String], subject: String, ?text: String?, ?html: String?, ?headers: Hash[untyped, untyped], ?attachments: Array[Hash[untyped, untyped]], ?metadata: Hash[untyped, untyped]) -> Message
     def self.registry: () -> ProviderRegistry
     def self.providers: () -> Array[Symbol]
+    def self.provider_metadata: (Symbol | String name) -> Hash[Symbol, untyped]
     def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
     def self.configure_from_env: (?env: untyped) -> ProviderRegistry
     def self.deliver: (from: String, to: String | Array[String], subject: String, ?text: String?, ?html: String?, ?headers: Hash[untyped, untyped], ?attachments: Array[Hash[untyped, untyped]], ?metadata: Hash[untyped, untyped], ?provider: (Symbol | String)?, ?max_attempts: Integer?, ?observer: Observability::Memory?) -> Delivery
 
     class ProviderRegistry < Sender::Core::ProviderRegistry
-      DEFAULT_PROVIDERS: Hash[Symbol, String]
+      DEFAULT_PROVIDERS: Hash[Symbol, untyped]
 
-      def initialize: (?catalog: Hash[Symbol | String, String]) -> void
+      def initialize: (?catalog: Hash[Symbol | String, untyped]) -> void
       def supported: () -> Array[Symbol]
       def configured: () -> Array[Symbol]
       def configure: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration

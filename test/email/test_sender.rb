@@ -33,6 +33,7 @@ module Email
     def test_exposes_the_initial_email_provider_catalog_without_loading_adapters
       with_fresh_registry do
         assert_equal %i[mailpit resend mailgun], Sender.providers
+        assert_equal :fully_tested, Sender.provider_metadata(:mailpit).fetch(:support_level)
         assert_empty Sender.registry.configured
       end
     end

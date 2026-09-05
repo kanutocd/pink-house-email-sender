@@ -45,6 +45,8 @@ EMAIL_SENDER_RESEND_SETTINGS='{"api_key":"..."}'
 Call `Email::Sender.configure_from_env` during application boot. Each
 provider's `*_SETTINGS` value is a JSON object whose keys match that adapter's
 settings.
+Provider metadata includes an advisory `support_level`; it is informational
+only and does not prevent use of experimental or deprecated providers.
 
 ## Usage
 
