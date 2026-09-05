@@ -3,6 +3,17 @@ module Email
     class Error < StandardError
     end
 
+    class ProviderConfiguration < Sender::Core::ProviderConfiguration
+    end
+
+    class Provider < Sender::Core::Provider
+    end
+
+    module Errors
+      FAILOVER_CATEGORIES: Array[Symbol]
+      RETRYABLE_CATEGORIES: Array[Symbol]
+    end
+
     VERSION: String
 
     class Message
@@ -20,5 +31,17 @@ module Email
     end
 
     def self.build_message: (from: String, to: String | Array[String], subject: String, ?text: String?, ?html: String?, ?headers: Hash[untyped, untyped], ?attachments: Array[Hash[untyped, untyped]], ?metadata: Hash[untyped, untyped]) -> Message
+    def self.registry: () -> ProviderRegistry
+    def self.providers: () -> Array[Symbol]
+    def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+
+    class ProviderRegistry < Sender::Core::ProviderRegistry
+      DEFAULT_PROVIDERS: Hash[Symbol, String]
+
+      def initialize: (?catalog: Hash[Symbol | String, String]) -> void
+      def supported: () -> Array[Symbol]
+      def configured: () -> Array[Symbol]
+      def configure: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+    end
   end
 end

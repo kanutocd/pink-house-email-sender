@@ -9,3 +9,5 @@
   set.
 - Start Phase 1 with immutable email message validation and conversion to
   `sender-core` message contracts.
+- Add lazy catalog and configuration support for Mailpit,
+  Resend, and Mailgun.

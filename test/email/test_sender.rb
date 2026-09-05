@@ -29,5 +29,32 @@ module Email
       assert_equal "one@example.test, two@example.test", core_message.to
       assert_equal "sender@example.test", core_message.metadata[:email][:from]
     end
+
+    def test_exposes_the_initial_email_provider_catalog_without_loading_adapters
+      with_fresh_registry do
+        assert_equal %i[mailpit resend mailgun], Sender.providers
+        assert_empty Sender.registry.configured
+      end
+    end
+
+    def test_configures_a_provider_without_loading_its_adapter
+      with_fresh_registry do
+        configuration = Sender.configure_provider(:mailpit, settings: { base_url: "http://localhost:8025" })
+
+        assert_equal :mailpit, configuration.name
+        assert_equal "http://localhost:8025", configuration[:base_url]
+        assert_equal [:email], configuration.capabilities
+      end
+    end
+
+    private
+
+    def with_fresh_registry
+      previous = Email::Sender.instance_variable_get(:@registry)
+      Email::Sender.instance_variable_set(:@registry, Email::Sender::ProviderRegistry.new)
+      yield
+    ensure
+      Email::Sender.instance_variable_set(:@registry, previous)
+    end
   end
 end
