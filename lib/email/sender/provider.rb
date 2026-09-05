@@ -40,7 +40,8 @@ module Email
                    end
         error_class = Errors.const_get(category.to_s.split("_").map(&:capitalize).join)
         raise error_class.new(
-          "#{provider} email request failed with HTTP #{response.status}", category: category, provider: provider
+          "#{provider} email request failed with HTTP #{response.status}: #{provider_error_detail(response)}",
+          category: category, provider: provider
         )
       end
 
@@ -74,6 +75,17 @@ module Email
         %i[open_timeout read_timeout write_timeout total_timeout].to_h do |key|
           [key, configuration[key]]
         end.compact
+      end
+
+      def provider_error_detail(response)
+        payload = JSON.parse(response.body.to_s)
+        detail = payload["message"] || payload["error"]
+        detail = detail["message"] if detail.is_a?(Hash)
+        detail.to_s.strip[0, 500].then do |value|
+          value.empty? ? "provider returned no diagnostic details" : value
+        end
+      rescue JSON::ParserError
+        "provider returned an unstructured error response"
       end
     end
   end

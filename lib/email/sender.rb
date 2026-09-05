@@ -39,10 +39,12 @@ module Email
         resend: "email/sender/providers/resend",
         mailgun: "email/sender/providers/mailgun"
       }.freeze
+      # Capabilities implemented by every provider in the initial catalog.
+      DEFAULT_CAPABILITIES = %i[email html].freeze
 
       # @param catalog [Hash] email provider names mapped to adapter paths
       def initialize(catalog: DEFAULT_PROVIDERS)
-        super(catalog: catalog, default_capabilities: [:email])
+        super(catalog: catalog, default_capabilities: DEFAULT_CAPABILITIES)
       end
 
       private

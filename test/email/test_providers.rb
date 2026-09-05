@@ -114,12 +114,26 @@ module Email
         assert_equal "https://api.mailgun.net/v3/mg.example.test/messages", http.requests.first[:url]
       end
 
+      def test_mailgun_treats_sandbox_recipient_forbidden_as_failover_eligible
+        http = FakeHttp.new(status: 403, body: { "message" => "Forbidden" })
+        provider = Providers::Mailgun.new(
+          configuration: configuration(:mailgun, api_key: "secret",
+                                                 base_url: "https://api.mailgun.net/v3/mg.example.test"), http: http
+        )
+
+        error = assert_raises(Errors::ProviderUnavailable) { provider.deliver(@message) }
+
+        assert_predicate error, :failover?
+        assert_equal :mailgun, error.provider
+      end
+
       def test_provider_maps_http_failures_and_missing_configuration
         error_http = FakeHttp.new(status: 429, body: { "message" => "slow down" })
         provider = Providers::Resend.new(configuration: configuration(:resend, api_key: "secret"), http: error_http)
 
         error = assert_raises(Errors::RateLimited) { provider.deliver(@message) }
         assert_predicate error, :failover?
+        assert_includes error.message, "slow down"
         assert_raises(Errors::ConfigurationError) do
           Providers::Resend.new(configuration: configuration(:resend), http: FakeHttp.new).deliver(@message)
         end

@@ -47,7 +47,7 @@ module Email
             "subject" => email[:subject],
             "text" => email[:text],
             "html" => email[:html]
-          }.merge("reply_to" => [email[:reply_to]]).compact
+          }.merge("reply_to" => email[:reply_to]).compact
         end
 
         def map_response(response)
@@ -55,6 +55,19 @@ module Email
 
           payload = response_payload(response)
           accepted_delivery(payload["id"], payload)
+        end
+
+        def map_http_error(response, provider: name)
+          return super unless response.status == 422 && testing_recipient_restriction?(response)
+
+          raise Errors::ProviderUnavailable.new(
+            "#{provider} email request failed with HTTP #{response.status}: Resend testing recipient restriction",
+            category: :provider_unavailable, provider: provider
+          )
+        end
+
+        def testing_recipient_restriction?(response)
+          response.body.to_s.match?(/testing email address|domains like `example\.com`/i)
         end
       end
     end

@@ -43,7 +43,7 @@ module Email
 
         assert_equal :mailpit, configuration.name
         assert_equal "http://localhost:8025", configuration[:base_url]
-        assert_equal [:email], configuration.capabilities
+        assert_equal %i[email html], configuration.capabilities
       end
     end
 

@@ -22,6 +22,19 @@ module Email
 
         private
 
+        # Mailgun sandbox accounts return 403 when a recipient is not authorized
+        # for the sandbox. That is provider-specific and should fail over to the
+        # next configured provider; genuine authorization failures retain the
+        # shared non-failover policy.
+        def map_http_error(response, provider: name)
+          return super unless response.status == 403
+
+          raise Errors::ProviderUnavailable.new(
+            "#{provider} email request failed with HTTP #{response.status}",
+            category: :provider_unavailable, provider: provider
+          )
+        end
+
         def endpoint
           base_url = (configuration[:base_url] || BASE_URL).to_s.sub(%r{/+$}, "")
           domain = configuration[:domain]

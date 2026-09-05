@@ -2,6 +2,17 @@
 
 ### Added
 
+- Preserve bounded provider diagnostic details in normalized HTTP errors to
+  make rejected deliveries actionable without exposing credentials.
+- Treat Resend sandbox testing-recipient restrictions as failover-eligible so
+  local providers such as Mailpit can handle the message.
+- Send Resend `reply_to` values in the string format required by the provider,
+  omitting the field when no reply-to address is configured.
+- Treat Mailgun sandbox recipient-forbidden responses as failover-eligible
+  provider failures while retaining non-failover handling for other
+  authorization errors.
+- Declare HTML support for the initial Mailpit, Resend, and Mailgun provider
+  catalog so HTML email messages can be elected and delivered.
 - Add the initial `Email::Sender` API with immutable email message validation
   and conversion to `sender-core` message contracts.
 - Add lazy configuration and HTTP adapters for Mailpit, Resend, and Mailgun.
