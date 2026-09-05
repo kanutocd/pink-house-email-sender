@@ -24,6 +24,9 @@ module Email
 
         def endpoint
           base_url = (configuration[:base_url] || BASE_URL).to_s.sub(%r{/+$}, "")
+          domain = configuration[:domain]
+          return "#{base_url}/messages" if domain.nil? && base_url.match?(%r{/v3/[^/]+\z})
+
           "#{base_url}/v3/#{required_setting(:domain)}/messages"
         end
 
@@ -40,14 +43,22 @@ module Email
 
         def request_body(message)
           email = email_metadata(message)
-          fields = {
-            "from" => email[:from],
-            "to" => email[:recipients].join(", "),
+          fields = recipient_fields(email).merge(
             "subject" => email[:subject],
             "text" => email[:text],
-            "html" => email[:html]
-          }
+            "html" => email[:html],
+            "h:Reply-To" => email[:reply_to]
+          )
           URI.encode_www_form(fields.compact)
+        end
+
+        def recipient_fields(email)
+          {
+            "from" => email[:from],
+            "to" => email[:recipients].join(", "),
+            "cc" => email[:cc].join(", "),
+            "bcc" => email[:bcc].join(", ")
+          }
         end
 
         def map_response(response)

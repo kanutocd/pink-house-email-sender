@@ -28,7 +28,11 @@ module Email
         end
 
         def headers(message)
-          headers = { "Authorization" => "Bearer #{required_setting(:api_key)}", "Content-Type" => "application/json" }
+          headers = {
+            "Authorization" => "Bearer #{required_setting(:api_key)}",
+            "Content-Type" => "application/json",
+            "User-Agent" => "email-sender/#{VERSION}"
+          }
           key = idempotency_key(message)
           key ? headers.merge("Idempotency-Key" => key.to_s) : headers
         end
@@ -38,10 +42,12 @@ module Email
           {
             "from" => email[:from],
             "to" => email[:recipients],
+            "cc" => email[:cc],
+            "bcc" => email[:bcc],
             "subject" => email[:subject],
             "text" => email[:text],
             "html" => email[:html]
-          }.compact
+          }.merge("reply_to" => [email[:reply_to]]).compact
         end
 
         def map_response(response)

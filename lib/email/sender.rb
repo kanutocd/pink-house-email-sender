@@ -82,14 +82,10 @@ module Email
 
     # Build an immutable email message for the delivery pipeline.
     # @return [Message] validated email message
-    def self.build_message(from:, to:, subject:, text: nil, html: nil, headers: {}, attachments: [], metadata: {})
+    def self.build_message(from:, to:, subject:, text: nil, html: nil, cc: [], bcc: [], reply_to: nil, headers: {},
+                           attachments: [], metadata: {})
       Message.new(
-        from: from,
-        to: to,
-        subject: subject,
-        text: text,
-        html: html,
-        headers: headers,
+        from:, to:, subject:, text:, html:, cc:, bcc:, reply_to:, headers:,
         attachments: attachments,
         metadata: metadata
       )
@@ -135,11 +131,12 @@ module Email
     # Deliver an email through the configured provider router.
     # @return [Delivery] provider-neutral delivery result
     def self.deliver(
-      from:, to:, subject:, text: nil, html: nil, headers: {}, attachments: [], metadata: {}, provider: nil,
+      from:, to:, subject:, text: nil, html: nil, cc: [], bcc: [], reply_to: nil, headers: {}, attachments: [],
+      metadata: {}, provider: nil,
       max_attempts: nil, observer: nil
     )
       message = build_message(
-        from: from, to: to, subject: subject, text: text, html: html,
+        from:, to:, subject:, text:, html:, cc:, bcc:, reply_to:,
         headers: headers, attachments: attachments, metadata: metadata
       )
       Router.new(observer: observer).deliver(message, provider: provider, max_attempts: max_attempts)

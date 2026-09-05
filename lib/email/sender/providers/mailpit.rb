@@ -33,13 +33,28 @@ module Email
 
         def request_body(message)
           email = email_metadata(message)
-          {
-            "From" => email[:from],
-            "To" => email[:recipients],
+          address_fields(email).merge(
             "Subject" => email[:subject],
             "Text" => email[:text],
             "HTML" => email[:html]
-          }.compact
+          ).compact
+        end
+
+        def address_fields(email)
+          {
+            "From" => address_payload(email[:from]),
+            "To" => email[:recipients].map { |recipient| address_payload(recipient) },
+            "Cc" => email[:cc].map { |recipient| address_payload(recipient) },
+            "Bcc" => email[:bcc],
+            "ReplyTo" => email[:reply_to] && [address_payload(email[:reply_to])]
+          }
+        end
+
+        def address_payload(address)
+          match = address.match(/\A(.+?)\s*<([^<>\s]+)>\z/)
+          return { "Email" => address } unless match
+
+          { "Email" => match[2], "Name" => match[1].strip }
         end
 
         def map_response(response)

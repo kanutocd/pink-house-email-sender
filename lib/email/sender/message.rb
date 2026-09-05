@@ -8,12 +8,18 @@ module Email
       attr_reader :from
       # @return [Array<String>] normalized recipient addresses
       attr_reader :to
+      # @return [Array<String>] normalized carbon-copy addresses
+      attr_reader :cc
+      # @return [Array<String>] normalized blind-carbon-copy addresses
+      attr_reader :bcc
       # @return [String] normalized subject
       attr_reader :subject
       # @return [String, nil] plain-text body
       attr_reader :text
       # @return [String, nil] HTML body
       attr_reader :html
+      # @return [String, nil] normalized reply-to address
+      attr_reader :reply_to
       # @return [Hash] normalized custom headers
       attr_reader :headers
       # @return [Array<Hash>] normalized attachments
@@ -29,14 +35,18 @@ module Email
       # @param headers [Hash] custom email headers
       # @param attachments [Array<Hash>] attachment descriptors
       # @param metadata [Hash] application metadata
-      def initialize(from:, to:, subject:, text: nil, html: nil, headers: {}, attachments: [], metadata: {})
+      def initialize(from:, to:, subject:, text: nil, html: nil, cc: [], bcc: [], reply_to: nil, headers: {},
+                     attachments: [], metadata: {})
         @from = normalize_address(from, "from")
         @to = normalize_recipients(to)
+        @cc = normalize_optional_recipients(cc, "cc")
+        @bcc = normalize_optional_recipients(bcc, "bcc")
         @subject = normalize_required_string(subject, "subject")
         @text = normalize_optional_body(text, "text")
         @html = normalize_optional_body(html, "html")
         raise ArgumentError, "text or html must be provided" unless @text || @html
 
+        @reply_to = reply_to && normalize_address(reply_to, "reply_to")
         @headers = normalize_headers(headers)
         @attachments = normalize_attachments(attachments)
         @metadata = deep_freeze(validate_hash(metadata, "metadata"))
@@ -58,9 +68,12 @@ module Email
             email: {
               from: from,
               recipients: to,
+              cc: cc,
+              bcc: bcc,
               subject: subject,
               text: text,
               html: html,
+              reply_to: reply_to,
               headers: headers,
               attachments: attachments
             }
@@ -78,9 +91,15 @@ module Email
         values.map { |address| normalize_address(address, "to") }.freeze
       end
 
+      def normalize_optional_recipients(value, name)
+        values = value.is_a?(Array) ? value : [value]
+        values.map { |address| normalize_address(address, name) }.uniq.freeze
+      end
+
       def normalize_address(value, name)
         address = normalize_required_string(value, name)
-        return address if address.match?(/\A[^@\s]+@[^@\s]+\.[^@\s]+\z/)
+        normalized_address = address[/<([^<>\s]+)>\z/, 1] || address
+        return address if normalized_address.match?(/\A[^@\s]+@[^@\s]+\.[^@\s]+\z/)
 
         raise ArgumentError, "#{name} must be a valid email address"
       end

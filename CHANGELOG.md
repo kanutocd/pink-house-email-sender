@@ -11,6 +11,9 @@
   `DeliveryEvent` objects.
 - Add configurable HTTP timeouts for provider adapters.
 - Add Resend `Idempotency-Key` forwarding from message metadata.
+- Include the required `User-Agent` header in Resend requests.
+- Accept Mailgun sandbox endpoints with the domain embedded in `base_url` and
+  preserve display-name sender addresses for provider payloads.
 - Add operational, migration, rollback, and release documentation.
 
 ### Quality

@@ -42,7 +42,22 @@ module Email
         assert_equal :accepted, delivery.status
         assert_equal "mailpit-123", delivery.provider_message_id
         assert_equal "http://localhost:8025/api/v1/send", http.requests.first[:url]
-        assert_equal ["one@example.test", "two@example.test"], http.requests.first[:body]["To"]
+        assert_equal [{ "Email" => "one@example.test" }, { "Email" => "two@example.test" }],
+                     http.requests.first[:body]["To"]
+        assert_equal({ "Email" => "sender@example.test" }, http.requests.first[:body]["From"])
+      end
+
+      def test_mailpit_preserves_a_display_name
+        http = FakeHttp.new
+        message = Message.new(
+          from: "Pink House <sender@example.test>", to: "recipient@example.test", subject: "Welcome", text: "Hello"
+        )
+        provider = Providers::Mailpit.new(configuration: configuration(:mailpit), http: http)
+
+        provider.deliver(message)
+
+        assert_equal({ "Email" => "sender@example.test", "Name" => "Pink House" },
+                     http.requests.first[:body]["From"])
       end
 
       def test_resend_maps_authentication_and_json_request
@@ -53,6 +68,7 @@ module Email
 
         assert_equal :accepted, delivery.status
         assert_equal "Bearer secret", http.requests.first[:headers]["Authorization"]
+        assert_equal "email-sender/#{VERSION}", http.requests.first[:headers]["User-Agent"]
         assert_equal "Welcome", http.requests.first[:body]["subject"]
       end
 
@@ -83,6 +99,18 @@ module Email
         assert_equal :accepted, delivery.status
         assert_equal "Basic YXBpOnNlY3JldA==", http.requests.first[:headers]["Authorization"]
         assert_includes http.requests.first[:body], "subject=Welcome"
+        assert_equal "https://api.mailgun.net/v3/mg.example.test/messages", http.requests.first[:url]
+      end
+
+      def test_mailgun_accepts_a_domain_in_the_base_url
+        http = FakeHttp.new
+        provider = Providers::Mailgun.new(
+          configuration: configuration(:mailgun, api_key: "secret",
+                                                 base_url: "https://api.mailgun.net/v3/mg.example.test"), http: http
+        )
+
+        provider.deliver(@message)
+
         assert_equal "https://api.mailgun.net/v3/mg.example.test/messages", http.requests.first[:url]
       end
 
