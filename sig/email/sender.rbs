@@ -34,6 +34,7 @@ module Email
     def self.registry: () -> ProviderRegistry
     def self.providers: () -> Array[Symbol]
     def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+    def self.deliver: (from: String, to: String | Array[String], subject: String, ?text: String?, ?html: String?, ?headers: Hash[untyped, untyped], ?attachments: Array[Hash[untyped, untyped]], ?metadata: Hash[untyped, untyped], ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
 
     class ProviderRegistry < Sender::Core::ProviderRegistry
       DEFAULT_PROVIDERS: Hash[Symbol, String]
@@ -42,6 +43,24 @@ module Email
       def supported: () -> Array[Symbol]
       def configured: () -> Array[Symbol]
       def configure: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+    end
+
+    class Router < Sender::Core::Router
+      def initialize: (?registry: ProviderRegistry?, ?circuit_options: Hash[Symbol, untyped], ?state_store: StateStore::Memory?, ?observer: Observability::Memory?) -> void
+      def deliver: (Message message, ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
+    end
+
+    class Delivery < Sender::Core::Delivery
+    end
+
+    module StateStore
+      class Memory < Sender::Core::StateStore::Memory
+      end
+    end
+
+    module Observability
+      class Memory < Sender::Core::Observability::Memory
+      end
     end
   end
 end

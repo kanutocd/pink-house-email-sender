@@ -47,6 +47,26 @@ module Email
       end
     end
 
+    def test_delivers_through_the_shared_router
+      provider = Class.new(Email::Sender::Provider) do
+        def deliver(message)
+          Email::Sender::Delivery.new(status: :accepted, provider: name, metadata: message.metadata)
+        end
+      end
+      registry = Email::Sender::ProviderRegistry.new(catalog: {})
+      registry.register(:fake, loader: -> { provider }, capabilities: [:email])
+      registry.configure(:fake)
+
+      delivery = Email::Sender::Router.new(registry: registry).deliver(
+        Email::Sender::Message.new(
+          from: "sender@example.test", to: "recipient@example.test", subject: "Hi", text: "Hello"
+        )
+      )
+
+      assert_equal :accepted, delivery.status
+      assert_equal :fake, delivery.provider
+    end
+
     private
 
     def with_fresh_registry

@@ -14,6 +14,14 @@ module Email
     ProviderConfiguration = ::Sender::Core::ProviderConfiguration
     # Shared provider adapter contract.
     Provider = ::Sender::Core::Provider
+    # Shared normalized delivery result.
+    Delivery = ::Sender::Core::Delivery
+    # Shared HTTP transport namespace.
+    HTTP = ::Sender::Core::HTTP
+    # Shared runtime state store namespace.
+    StateStore = ::Sender::Core::StateStore
+    # Shared observability namespace.
+    Observability = ::Sender::Core::Observability
     # Shared normalized error namespace.
     Errors = ::Sender::Core::Errors
 
@@ -43,6 +51,30 @@ module Email
           constant_name = path.split("/").last.split("_").map(&:capitalize).join
           Providers.const_get(constant_name)
         end
+      end
+    end
+
+    # Email facade over the shared delivery router.
+    class Router < ::Sender::Core::Router
+      # @param registry [ProviderRegistry, nil] email provider registry
+      # @param circuit_options [Hash] circuit-breaker options
+      # @param state_store [StateStore::Memory, nil] runtime state store
+      # @param observer [Observability::Memory, nil] event observer
+      def initialize(registry: nil, circuit_options: {}, state_store: nil, observer: nil)
+        super(
+          registry: registry || Sender.registry,
+          circuit_options: circuit_options,
+          state_store: state_store || StateStore::Memory.new,
+          observer: observer || Observability::Memory.new
+        )
+      end
+
+      # Route an email message through the shared runtime.
+      # @param message [Message] validated email message
+      # @return [Delivery] provider-neutral delivery result
+      def deliver(message, provider: nil, max_attempts: nil)
+        normalized = message.is_a?(Message) ? message.to_core_message : message
+        super(normalized, provider: provider, max_attempts: max_attempts)
       end
     end
 
@@ -82,5 +114,20 @@ module Email
         capabilities: capabilities
       )
     end
+
+    # Deliver an email through the configured provider router.
+    # @return [Delivery] provider-neutral delivery result
+    def self.deliver(
+      from:, to:, subject:, text: nil, html: nil, headers: {}, attachments: [], metadata: {}, provider: nil,
+      max_attempts: nil
+    )
+      message = build_message(
+        from: from, to: to, subject: subject, text: text, html: html,
+        headers: headers, attachments: attachments, metadata: metadata
+      )
+      Router.new.deliver(message, provider: provider, max_attempts: max_attempts)
+    end
   end
 end
+
+require_relative "sender/provider"
