@@ -1,6 +1,24 @@
 module Email
   module Sender
+    class Error < StandardError
+    end
+
     VERSION: String
-    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+    class Message
+      attr_reader from: String
+      attr_reader to: Array[String]
+      attr_reader subject: String
+      attr_reader text: String?
+      attr_reader html: String?
+      attr_reader headers: Hash[String, String]
+      attr_reader attachments: Array[Hash[Symbol, untyped]]
+      attr_reader metadata: Hash[untyped, untyped]
+
+      def initialize: (from: String, to: String | Array[String], subject: String, ?text: String?, ?html: String?, ?headers: Hash[untyped, untyped], ?attachments: Array[Hash[untyped, untyped]], ?metadata: Hash[untyped, untyped]) -> void
+      def to_core_message: () -> Sender::Core::Message
+    end
+
+    def self.build_message: (from: String, to: String | Array[String], subject: String, ?text: String?, ?html: String?, ?headers: Hash[untyped, untyped], ?attachments: Array[Hash[untyped, untyped]], ?metadata: Hash[untyped, untyped]) -> Message
   end
 end

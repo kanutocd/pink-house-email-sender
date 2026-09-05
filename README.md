@@ -1,43 +1,119 @@
-# Email::Sender
+# email-sender
 
-TODO: Delete this and the text below, and describe your gem
+`email-sender` is a Ruby gem for provider-neutral email delivery. It is
+designed to provide an email-oriented API while delegating shared delivery
+contracts, routing, failover, resilience, state, and observability to
+[`sender-core`](https://github.com/kanutocd/sender-core).
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/email/sender`. To experiment with that code, run `bin/console` for an interactive prompt.
+The email channel owns email validation, composition, provider adapters,
+authentication, and provider payload mapping. It does not duplicate the
+shared runtime or require a provider SDK.
+
+## Status
+
+The repository currently contains the gem foundation and implementation plan.
+Email-specific message modeling and provider integrations are being developed
+incrementally. See
+[`IMPLEMENTATION_PLAN.md`](.ignoreme/codex/IMPLEMENTATION_PLAN.md) for the
+planned phases.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add the gem to your application's Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "email-sender"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Then install it with Bundler:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle install
 ```
 
-## Usage
+## Intended usage
 
-TODO: Write usage instructions here
+The public API will provide an email-friendly facade over the shared delivery
+runtime:
+
+```ruby
+Email::Sender.deliver(
+  from: "no-reply@example.test",
+  to: "user@example.test",
+  subject: "Welcome",
+  text: "Welcome to the service"
+)
+```
+
+The final message and provider APIs will be defined by the channel boundary
+implementation. Invalid addresses, missing required fields, and unsupported
+content must be rejected before provider election.
+
+## Architecture
+
+```text
+Email::Sender facade
+        |
+email validation and composition
+        |
+sender-core Message -> Router -> email provider adapter -> provider API
+                              |
+                  health, failover, state, observability
+```
+
+Email provider adapters remain thin and independently testable. They translate
+validated email data to provider requests and map responses and failures to
+`sender-core` contracts.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Install development dependencies with:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```bash
+bin/setup
+```
+
+Run the complete quality harness with:
+
+```bash
+bundle exec rake
+```
+
+The harness runs tests, RuboCop, RBS validation, YARD generation, and a 100%
+YARD documentation coverage check. Tests must be deterministic and must not
+require credentials, network access, or live email provider availability.
+
+Useful individual tasks include:
+
+```bash
+bundle exec rake test
+bundle exec rake rubocop
+bundle exec rake rbs
+bundle exec rake yard
+bundle exec rake yard:coverage
+bundle exec rake build
+bin/console
+```
+
+## Design principles
+
+- Keep email-specific behavior in this gem and shared behavior in
+  `sender-core`.
+- Validate before provider election and classify errors explicitly.
+- Preserve immutable delivery context and attempt history.
+- Keep adapters thin, lazy-loaded, and independent of live services.
+- Prefer standard-library boundaries and minimal production dependencies.
+- Keep receipts and webhook parsing separate from outbound sending.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/email-sender. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/email-sender/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome at
+[github.com/kanutocd/email-sender](https://github.com/kanutocd/email-sender).
+Meaningful user, operator, integration, tooling, and architectural changes
+should be recorded in `CHANGELOG.md` under `Unreleased`.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+This project is available under the [MIT License](LICENSE.txt).
 
-## Code of Conduct
-
-Everyone interacting in the Email::Sender project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/email-sender/blob/main/CODE_OF_CONDUCT.md).
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community guidelines.
