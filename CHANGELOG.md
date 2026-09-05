@@ -2,6 +2,8 @@
 
 ### Added
 
+- Support multiple named instances of the same email provider adapter with
+  independent settings and runtime state.
 - Identify catalog providers with advisory `support_level` metadata; values are
   informational and never prevent provider use.
 - Preserve bounded provider diagnostic details in normalized HTTP errors to

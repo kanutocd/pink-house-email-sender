@@ -89,6 +89,23 @@ module Email
       end
     end
 
+    def test_configures_multiple_instances_of_one_provider_from_environment
+      with_fresh_registry do
+        Sender.configure_from_env(
+          env: {
+            "EMAIL_SENDER_PROVIDERS" => "resend_primary,resend_backup",
+            "EMAIL_SENDER_DEFAULT_PROVIDER" => "resend_primary",
+            "EMAIL_SENDER_RESEND_PRIMARY_SETTINGS" => '{"api_key":"primary"}',
+            "EMAIL_SENDER_RESEND_BACKUP_SETTINGS" => '{"api_key":"backup"}'
+          }
+        )
+
+        assert_equal %i[resend_primary resend_backup], Sender.registry.configured
+        assert_equal :resend, Sender.registry.provider_metadata(:resend_backup).fetch(:adapter)
+        assert_equal "backup", Sender.registry.provider(:resend_backup).configuration[:api_key]
+      end
+    end
+
     private
 
     def with_fresh_registry

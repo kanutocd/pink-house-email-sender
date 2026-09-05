@@ -129,6 +129,7 @@ module Email
       raise ArgumentError, "default provider must be selected" unless names.include?(default)
 
       names.each_with_index do |name, index|
+        ensure_environment_provider(name)
         priority = name == default ? names.length + 1 : names.length - index
         configure_provider(name, settings: environment_settings(env, name), priority: priority)
       end
@@ -153,6 +154,15 @@ end
 
 class << Email::Sender
   private
+
+  def ensure_environment_provider(name)
+    return if registry.supported.include?(name.to_sym)
+
+    adapter, instance = name.split("_", 2)
+    return registry.register_alias(name, source: adapter) if instance && registry.supported.include?(adapter.to_sym)
+
+    raise ArgumentError, "unknown provider or provider instance: #{name}"
+  end
 
   def environment_settings(env, name)
     raw = env["EMAIL_SENDER_#{name.upcase}_SETTINGS"]

@@ -42,6 +42,19 @@ EMAIL_SENDER_DEFAULT_PROVIDER=resend
 EMAIL_SENDER_RESEND_SETTINGS='{"api_key":"..."}'
 ```
 
+Multiple accounts of one provider can be configured as named instances. An
+instance name uses the adapter name as its prefix:
+
+```bash
+EMAIL_SENDER_PROVIDERS=resend_primary,resend_backup
+EMAIL_SENDER_DEFAULT_PROVIDER=resend_primary
+EMAIL_SENDER_RESEND_PRIMARY_SETTINGS='{"api_key":"..."}'
+EMAIL_SENDER_RESEND_BACKUP_SETTINGS='{"api_key":"..."}'
+```
+
+Each instance has independent priority, fallback, circuit-breaker, and health
+state. Existing single-provider variables remain supported.
+
 Call `Email::Sender.configure_from_env` during application boot. Each
 provider's `*_SETTINGS` value is a JSON object whose keys match that adapter's
 settings.
