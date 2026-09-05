@@ -120,13 +120,13 @@ module Email
     # @return [Delivery] provider-neutral delivery result
     def self.deliver(
       from:, to:, subject:, text: nil, html: nil, headers: {}, attachments: [], metadata: {}, provider: nil,
-      max_attempts: nil
+      max_attempts: nil, observer: nil
     )
       message = build_message(
         from: from, to: to, subject: subject, text: text, html: html,
         headers: headers, attachments: attachments, metadata: metadata
       )
-      Router.new.deliver(message, provider: provider, max_attempts: max_attempts)
+      Router.new(observer: observer).deliver(message, provider: provider, max_attempts: max_attempts)
     end
   end
 end

@@ -69,6 +69,27 @@ module Email
       assert_equal 0, CountingProvider.calls
     end
 
+    def test_public_email_api_exposes_structured_router_events
+      registry = Email::Sender::ProviderRegistry.new(catalog: {})
+      registry.register(:successful, loader: -> { SuccessfulProvider }, capabilities: [:email])
+      registry.configure(:successful)
+      observer = Email::Sender::Observability::Memory.new
+
+      with_registry(registry) do
+        Email::Sender.deliver(
+          from: "sender@example.test",
+          to: "recipient@example.test",
+          subject: "Hello",
+          text: "Message",
+          observer: observer
+        )
+      end
+
+      event_types = observer.events.map { |event| event[:type] }
+
+      assert_equal %i[election attempt], event_types
+    end
+
     private
 
     def with_registry(registry)
