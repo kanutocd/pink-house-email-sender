@@ -5,10 +5,10 @@ module Email
     # Base behavior shared by email provider adapters.
     class ProviderAdapter < Provider
       # @param configuration [ProviderConfiguration] provider settings
-      # @param http [HTTP::Client] injectable HTTP client
-      def initialize(configuration:, http: HTTP::Client.new)
+      # @param http [HTTP::Client, nil] injectable HTTP client
+      def initialize(configuration:, http: nil)
         super(configuration: configuration)
-        @http = http
+        @http = http || HTTP::Client.new(**http_options)
       end
 
       private
@@ -63,6 +63,12 @@ module Email
         raise Errors::ConfigurationError.new(
           "#{name} #{key} is required", category: :configuration, provider: name
         )
+      end
+
+      def http_options
+        %i[open_timeout read_timeout write_timeout total_timeout].to_h do |key|
+          [key, configuration[key]]
+        end.compact
       end
     end
   end
