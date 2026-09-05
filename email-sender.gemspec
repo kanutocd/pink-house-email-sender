@@ -3,7 +3,7 @@
 require_relative "lib/email/sender/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "email-sender"
+  spec.name = "pink-house-email-sender"
   spec.version = Email::Sender::VERSION
   spec.authors = ["Ken C. Demanawa"]
   spec.email = ["kenneth.c.demanawa@gmail.com"]
@@ -14,14 +14,14 @@ Gem::Specification.new do |spec|
     provider-neutral delivery contracts, routing, failover, resilience, and
     observability.
   DESCRIPTION
-  spec.homepage = "https://kanutocd.github.io/email-sender"
+  spec.homepage = "https://kanutocd.github.io/pink-house-email-sender"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/kanutocd/email-sender"
-  spec.metadata["changelog_uri"] = "https://github.com/kanutocd/email-sender/blob/main/CHANGELOG.md"
-  spec.metadata["bug_tracker_uri"] = "https://github.com/kanutocd/email-sender/issues"
+  spec.metadata["source_code_uri"] = "https://github.com/kanutocd/pink-house-email-sender"
+  spec.metadata["changelog_uri"] = "https://github.com/kanutocd/pink-house-email-sender/blob/main/CHANGELOG.md"
+  spec.metadata["bug_tracker_uri"] = "https://github.com/kanutocd/pink-house-email-sender/issues"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   # Uncomment the line below to require MFA for gem pushes.
@@ -43,7 +43,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "sender-core", "~> 0.1"
+  spec.add_dependency "pink-house-sender-core", ">= 0.1"
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
