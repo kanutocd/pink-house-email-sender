@@ -67,6 +67,27 @@ module Email
       assert_equal :fake, delivery.provider
     end
 
+    def test_configures_selected_providers_and_default_from_environment
+      with_fresh_registry do
+        Sender.registry.register(:first, loader: -> { Email::Sender::Provider })
+        Sender.registry.register(:second, loader: -> { Email::Sender::Provider })
+
+        Sender.configure_from_env(
+          env: {
+            "EMAIL_SENDER_PROVIDERS" => "first, second",
+            "EMAIL_SENDER_DEFAULT_PROVIDER" => "second",
+            "EMAIL_SENDER_FIRST_SETTINGS" => '{"token":"secret"}'
+          }
+        )
+
+        assert_equal %i[first second], Sender.registry.configured
+        priorities = Sender.registry.providers.to_h { |provider| [provider.name, provider.configuration.priority] }
+
+        assert_operator priorities[:second], :>, priorities[:first]
+        assert_equal "secret", Sender.registry.provider(:first).configuration[:token]
+      end
+    end
+
     private
 
     def with_fresh_registry

@@ -2,6 +2,7 @@
 
 require_relative "sender/version"
 require "sender/core"
+require "json"
 require_relative "sender/message"
 require_relative "sender/receipt"
 
@@ -116,6 +117,21 @@ module Email
       )
     end
 
+    # Configure selected providers and their preferred default from an env-like object.
+    # @param env [#fetch, #[]] environment values
+    # @return [ProviderRegistry] configured email registry
+    def self.configure_from_env(env: ENV)
+      names = env.fetch("EMAIL_SENDER_PROVIDERS").split(",").map(&:strip).reject(&:empty?)
+      default = env.fetch("EMAIL_SENDER_DEFAULT_PROVIDER").strip
+      raise ArgumentError, "default provider must be selected" unless names.include?(default)
+
+      names.each_with_index do |name, index|
+        priority = name == default ? names.length + 1 : names.length - index
+        configure_provider(name, settings: environment_settings(env, name), priority: priority)
+      end
+      registry
+    end
+
     # Deliver an email through the configured provider router.
     # @return [Delivery] provider-neutral delivery result
     def self.deliver(
@@ -128,6 +144,22 @@ module Email
       )
       Router.new(observer: observer).deliver(message, provider: provider, max_attempts: max_attempts)
     end
+  end
+end
+
+class << Email::Sender
+  private
+
+  def environment_settings(env, name)
+    raw = env["EMAIL_SENDER_#{name.upcase}_SETTINGS"]
+    return {} if raw.nil? || raw.strip.empty?
+
+    settings = JSON.parse(raw)
+    raise ArgumentError, "provider settings must be a JSON object" unless settings.is_a?(Hash)
+
+    settings.transform_keys(&:to_sym)
+  rescue JSON::ParserError => e
+    raise ArgumentError, "provider settings must contain valid JSON: #{e.message}"
   end
 end
 

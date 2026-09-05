@@ -24,7 +24,9 @@ Metrics/MethodLength:
 
 Metrics/AbcSize:
   Exclude:
+    - "lib/email/sender.rb"
     - "lib/email/sender/message.rb"
+    - "test/email/test_sender.rb"
     - "test/email/test_message.rb"
     - "test/email/test_providers.rb"
     - "test/email/test_router.rb"
