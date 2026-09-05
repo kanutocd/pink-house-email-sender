@@ -3,6 +3,7 @@
 require_relative "sender/version"
 require "sender/core"
 require_relative "sender/message"
+require_relative "sender/receipt"
 
 # Top-level namespace for email-related libraries.
 module Email

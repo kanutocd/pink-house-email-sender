@@ -19,12 +19,14 @@ Metrics/MethodLength:
     - "test/email/test_sender.rb"
     - "test/email/test_message.rb"
     - "lib/email/sender/provider.rb"
+    - "test/email/test_router.rb"
 
 Metrics/AbcSize:
   Exclude:
     - "lib/email/sender/message.rb"
     - "test/email/test_message.rb"
     - "test/email/test_providers.rb"
+    - "test/email/test_router.rb"
 
 Metrics/ParameterLists:
   Exclude:

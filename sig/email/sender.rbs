@@ -53,6 +53,12 @@ module Email
     class Delivery < Sender::Core::Delivery
     end
 
+    class Receipt
+      STATUS_MAP: Hash[String, Symbol]
+
+      def self.from: (provider: Symbol | String, payload: Hash[untyped, untyped], ?provider_message_id: String?, ?occurred_at: Time) -> Sender::Core::DeliveryEvent
+    end
+
     module StateStore
       class Memory < Sender::Core::StateStore::Memory
       end
