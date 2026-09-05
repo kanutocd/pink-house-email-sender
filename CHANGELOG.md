@@ -1,13 +1,23 @@
 ## [Unreleased]
 
-- Add boilerplate files generated from the `bundle gem ...`
-- Populate gem metadata and replace the generated README with the
-  email-sender project overview.
-- Add the complete `bundle exec rake` quality harness for tests, RuboCop, RBS,
-  and 100% YARD documentation coverage.
-- Define Mailpit, Resend, and Mailgun as the initial supported email provider
-  set.
-- Start Phase 1 with immutable email message validation and conversion to
-  `sender-core` message contracts.
-- Add lazy catalog and configuration support for Mailpit,
-  Resend, and Mailgun.
+### Added
+
+- Add the initial `Email::Sender` API with immutable email message validation
+  and conversion to `sender-core` message contracts.
+- Add lazy configuration and HTTP adapters for Mailpit, Resend, and Mailgun.
+- Add provider-neutral routing with bounded failover, circuit protection,
+  health tracking, attempt history, and structured router events.
+- Add receipt normalization from provider payloads to `sender-core`
+  `DeliveryEvent` objects.
+- Add configurable HTTP timeouts for provider adapters.
+- Add Resend `Idempotency-Key` forwarding from message metadata.
+- Add operational, migration, rollback, and release documentation.
+
+### Quality
+
+- Add the `bundle exec rake` quality harness covering tests, RuboCop, RBS, and
+  100% YARD documentation coverage.
+- Verify the `email-sender` 0.1.0 package and its `sender-core` 0.1.0
+  integration boundary.
+- Add environment-based provider selection, default-provider priority, and
+  JSON provider settings configuration.
