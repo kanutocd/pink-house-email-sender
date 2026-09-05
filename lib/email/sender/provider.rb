@@ -56,6 +56,11 @@ module Email
         message.is_a?(Message) ? message.to_core_message.metadata.fetch(:email) : message.metadata.fetch(:email)
       end
 
+      def idempotency_key(message)
+        metadata = message.is_a?(Message) ? message.to_core_message.metadata : message.metadata
+        metadata[:idempotency_key] || metadata["idempotency_key"]
+      end
+
       def required_setting(key)
         value = configuration[key]
         return value.to_s unless value.nil? || value.to_s.empty?

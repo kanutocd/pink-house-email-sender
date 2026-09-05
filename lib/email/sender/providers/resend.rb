@@ -17,7 +17,7 @@ module Email
         # @return [Delivery] accepted provider response
         def deliver(message)
           validate_message(message)
-          response = @http.request(:post, endpoint, headers: headers, body: request_body(message))
+          response = @http.request(:post, endpoint, headers: headers(message), body: request_body(message))
           map_response(response)
         end
 
@@ -27,8 +27,10 @@ module Email
           "#{configuration[:base_url] || BASE_URL}#{SEND_PATH}"
         end
 
-        def headers
-          { "Authorization" => "Bearer #{required_setting(:api_key)}", "Content-Type" => "application/json" }
+        def headers(message)
+          headers = { "Authorization" => "Bearer #{required_setting(:api_key)}", "Content-Type" => "application/json" }
+          key = idempotency_key(message)
+          key ? headers.merge("Idempotency-Key" => key.to_s) : headers
         end
 
         def request_body(message)

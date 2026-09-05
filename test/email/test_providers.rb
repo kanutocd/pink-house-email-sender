@@ -56,6 +56,22 @@ module Email
         assert_equal "Welcome", http.requests.first[:body]["subject"]
       end
 
+      def test_resend_forwards_an_idempotency_key_from_message_metadata
+        http = FakeHttp.new
+        message = Message.new(
+          from: "sender@example.test",
+          to: "recipient@example.test",
+          subject: "Welcome",
+          text: "Hello",
+          metadata: { idempotency_key: "request-123" }
+        )
+        provider = Providers::Resend.new(configuration: configuration(:resend, api_key: "secret"), http: http)
+
+        provider.deliver(message)
+
+        assert_equal "request-123", http.requests.first[:headers]["Idempotency-Key"]
+      end
+
       def test_mailgun_maps_basic_auth_and_form_request
         http = FakeHttp.new
         provider = Providers::Mailgun.new(
